@@ -1,0 +1,8 @@
+delete_merged_file: true
+language:
+  ui:
+    chapter_name: "Capítulo "
+
+book_filename: "seriesdetiempo"
+output_dir: "docs"
+rmd_files: ["index.Rmd", "02_analisis.Rmd"]

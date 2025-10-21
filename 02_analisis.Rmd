@@ -1,0 +1,172 @@
+---
+title: "Unidad 2 — Análisis temporal (PIB per cápita) + CO₂ opcional"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Unidad 2 — Análisis temporal (PIB per cápita)
+
+En esta unidad se realiza un análisis exploratorio de **PIB per cápita** (Banco Mundial, 1960–2022) para países LATAM (COL, MEX, BRA, CHL, ARG), con:
+- **Promedio móvil** (suavizamiento),
+- **Rezagos** y **ACF** (dependencia temporal),
+- Discusión de **estacionalidad** (serie anual, no hay estacionalidad intra-anual).
+
+> **Nota:** El API del Banco Mundial está devolviendo intermitentemente “indicator not found” para CO₂. Para no bloquear la entrega, la serie principal de la Unidad 2 será **PIB per cápita** (`NY.GDP.PCAP.CD`). Al final añadimos un **chunk opcional** que intenta traer **CO₂ per cápita** (`EN.ATM.CO2E.PC`) con códigos de país **en mayúsculas**; si funciona, se muestra un gráfico **PIB–CO₂** como “tiempo variable complementaria”. Si no, la compilación no se rompe.
+
+---
+
+## Librerías
+
+```{r setup, message=FALSE, warning=FALSE}
+library(WDI)        # fuente Banco Mundial (WDI)
+library(wbstats)    # otra interfaz al API del Banco Mundial
+library(dplyr)
+library(ggplot2)
+library(zoo)
+```
+
+## Descarga y preparación de PIB per cápita (serie estable)
+```{r, echo=TRUE,include=TRUE}
+# Descargar PIB per cápita (US$ actuales) por país, garantizando MAYÚSCULAS
+
+paises <- c("COL","MEX","BRA","CHL","ARG")
+years  <- 1960:2022
+
+get_gdp_pc <- function(cc) {
+WDI(country = toupper(cc),
+indicator = c(gdp = "NY.GDP.PCAP.CD"),
+start = min(years), end = max(years))
+}
+
+lst_gdp <- lapply(paises, get_gdp_pc)
+dat_gdp <- bind_rows(lst_gdp)
+
+# Limpiar y ordenar
+
+dat_gdp <- dat_gdp %>%
+transmute(country, iso2c, iso3c,
+year = as.integer(year),
+gdp) %>%
+arrange(country, year)
+
+# Verificación rápida
+
+stopifnot("gdp" %in% names(dat_gdp))
+head(dat_gdp)
+range(dat_gdp$year)
+
+```
+
+## Serie principal (Colombia) y gráfico base
+
+
+```{r, echo=TRUE,include=TRUE}
+gdp_col <- dat_gdp %>%
+filter(country == "Colombia") %>%
+arrange(year)
+
+ggplot(gdp_col, aes(year, gdp)) +
+geom_line(linewidth = 1, color = "steelblue") +
+geom_point(size = 1.5) +
+labs(title = "PIB per cápita — Colombia (1960–2022)",
+x = "Año", y = "US$ actuales por persona") +
+theme_minimal()
+
+```
+
+## Promedio móvil (suavizamiento)
+```{r, echo=TRUE,include=TRUE}
+gdp_col <- gdp_col %>%
+mutate(ma5 = zoo::rollmean(gdp, k = 5, fill = NA, align = "right"))
+
+ggplot(gdp_col, aes(year)) +
+geom_line(aes(y = gdp), color = "gray60") +
+geom_line(aes(y = ma5), color = "red", linewidth = 1) +
+labs(title = "PIB per cápita y promedio móvil (5 años)",
+x = "Año", y = "US$ actuales por persona") +
+theme_minimal()
+```
+
+## Rezagos y ACF (dependencia temporal)
+```{r, echo=TRUE,include=TRUE}
+gdp_col <- gdp_col %>%
+mutate(gdp_lag1 = dplyr::lag(gdp, 1))
+
+ggplot(gdp_col, aes(gdp_lag1, gdp)) +
+geom_point() +
+geom_smooth(method = "lm", se = FALSE, color = "red") +
+labs(title = "PIB per cápita: gdp(t) vs gdp(t−1)",
+x = "PIB per cápita año t−1", y = "PIB per cápita año t") +
+theme_minimal()
+
+ts_gdp <- ts(gdp_col$gdp, start = min(gdp_col$year), frequency = 1)
+acf(ts_gdp, main = "ACF — PIB per cápita (anual)")
+```
+
+## Estacionalidad (discusión)
+La serie es anual (frecuencia 1), por lo que no existe estacionalidad intra-anual.
+La dinámica observable es de tendencia/ciclos de largo plazo. Para estacionalidad clásica se requerirían datos mensuales o trimestrales.
+## Tiempo como variable complementaria: PIB vs CO₂
+```{r, echo=TRUE,include=TRUE}
+# Tiempo como variable complementaria: PIB vs CO₂
+
+show_co2_plot <- FALSE
+
+# Intento 1: CO₂ per cápita directo por país (códigos MAYÚSCULAS)
+
+safe_get_pc <- function(cc) {
+try(
+wb_data(
+indicator   = c(co2 = "EN.ATM.CO2E.PC"),
+country     = toupper(cc),
+start_date  = min(years),
+end_date    = max(years),
+return_wide = TRUE
+),
+silent = TRUE
+)
+}
+
+lst_co2 <- lapply(paises, safe_get_pc)
+
+# Validar que al menos uno devolvió 'co2' con datos no-NA
+
+valid_frames <- lapply(lst_co2, function(x) {
+is.data.frame(x) && "co2" %in% names(x) && any(!is.na(x$co2))
+})
+
+if (any(unlist(valid_frames))) {
+co2_ok <- bind_rows(lst_co2[unlist(valid_frames)]) %>%
+transmute(country, iso2c, iso3c,
+year = as.integer(date),
+co2) %>%
+arrange(country, year)
+
+# Unir con PIB
+
+dat_join <- inner_join(co2_ok, dat_gdp,
+by = c("country","iso2c","iso3c","year"))
+if (nrow(dat_join) > 0) {
+show_co2_plot <- TRUE
+co2_countries <- intersect(unique(dat_join$country), unique(dat_gdp$country))
+message("CO₂ disponible para: ", paste(co2_countries, collapse = ", "))
+
+
+ggplot(dat_join %>% filter(country %in% co2_countries),
+       aes(gdp, co2, group = country, color = year)) +
+  geom_path(linewidth = 1) +
+  scale_x_log10() +
+  labs(title = "PIB per cápita vs CO₂ per cápita (si API responde)",
+       x = "PIB per cápita (US$ actuales, log)",
+       y = "CO₂ per cápita (t/persona·año)") +
+  theme_minimal()
+
+
+}
+}
+
+if (!show_co2_plot) {
+message("No se pudo obtener CO₂ per cápita en este intento; el análisis principal usa PIB per cápita.")
+}
+```

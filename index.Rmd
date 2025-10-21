@@ -1,0 +1,26 @@
+---
+title: "Propuesta — Pronóstico de Series de Tiempo"
+author: "Angel David Sanchez Serna"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+---
+
+# Propuesta
+
+## Tema y variable
+Se analizará la **evolución anual de las emisiones de CO₂ per cápita** y su relación con el **PIB per cápita** para países de LATAM (COL, MEX, BRA, CHL, ARG) con datos del **Banco Mundial (1960–2022)**.
+
+## Justificación
+- Relevancia económica-ambiental y de políticas públicas.
+- Valor para decisiones (descarbonización, tendencias de largo plazo).
+- Datos limpios/abiertos, accesibles desde R.
+
+## Fuentes y permisos
+- World Development Indicators — **CC BY 4.0**  
+  - CO₂ per cápita: `EN.ATM.CO2E.PC` (o cálculo desde `EN.ATM.CO2E.KT` y `SP.POP.TOTL`)  
+  - PIB per cápita: `NY.GDP.PCAP.CD`
+
+## Entregables
+- **Unidad 1 (esta página):** Propuesta y fuentes.  
+- **Unidad 2:** Análisis de CO₂ per cápita (promedio móvil, rezagos, estacionalidad).

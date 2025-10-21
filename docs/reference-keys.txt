@@ -1,0 +1,12 @@
+propuesta
+tema-y-variable
+justificación
+fuentes-y-permisos
+entregables
+unidad-2-análisis-temporal-pib-per-cápita
+librerías
+descarga-y-preparación-de-pib-per-cápita-serie-estable
+serie-principal-colombia-y-gráfico-base
+promedio-móvil-suavizamiento
+rezagos-y-acf-dependencia-temporal
+estacionalidad-discusión
