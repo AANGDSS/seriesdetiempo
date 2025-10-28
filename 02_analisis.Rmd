@@ -1,8 +1,8 @@
 ---
 title: "Unidad 2 — Análisis temporal (PIB per cápita) + CO₂ opcional"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 # Unidad 2 — Análisis temporal (PIB per cápita)
@@ -150,7 +150,7 @@ by = c("country","iso2c","iso3c","year"))
 if (nrow(dat_join) > 0) {
 show_co2_plot <- TRUE
 co2_countries <- intersect(unique(dat_join$country), unique(dat_gdp$country))
-message("CO₂ disponible para: ", paste(co2_countries, collapse = ", "))
+# message("CO₂ disponible para: ", paste(co2_countries, collapse = ", "))
 
 
 ggplot(dat_join %>% filter(country %in% co2_countries),
@@ -170,3 +170,88 @@ if (!show_co2_plot) {
 message("No se pudo obtener CO₂ per cápita en este intento; el análisis principal usa PIB per cápita.")
 }
 ```
+
+
+```{r, echo=TRUE, include=TRUE}
+# Descomposición (anual sin estacionalidad), estacionariedad y diferenciación
+
+# Cargar paquetes (asegúrate de tenerlos instalados previamente)
+library(tseries)
+library(urca)
+library(dplyr)
+
+# 1) Serie de Colombia en log (control de variabilidad)
+if (!exists("gdp_col")) {
+  gdp_col <- dat_gdp %>%
+    filter(country == "Colombia") %>%
+    arrange(year)
+}
+
+gdp_col <- gdp_col %>% mutate(log_gdp = log(gdp))
+ts_log  <- ts(gdp_col$log_gdp,
+              start = min(gdp_col$year, na.rm = TRUE),
+              frequency = 1)  # anual ⇒ sin estacionalidad
+
+# 2) "Descomposición" compatible con frecuencia 1:
+#    Tendencia por LOESS + Residuo = log(PIB) - Tendencia
+df_loess <- data.frame(year = gdp_col$year, log_gdp = as.numeric(ts_log))
+fit      <- loess(log_gdp ~ year, data = df_loess, span = 0.3, degree = 1)
+trend    <- ts(predict(fit, newdata = df_loess),
+               start = start(ts_log), frequency = frequency(ts_log))
+remainder <- ts_log - trend
+
+# Gráfico de los tres componentes
+op <- par(mfrow = c(3,1), mar = c(3,4,2,1))
+plot(ts_log,    main = "log(PIB per cápita) — Colombia", ylab = "log(US$)")
+plot(trend,     main = "Tendencia (LOESS)",              ylab = "log(US$)")
+plot(remainder, main = "Residuo",                        ylab = "log(US$)")
+par(op)
+
+# 3) Estacionariedad (log nivel)
+adf_log  <- tseries::adf.test(na.omit(ts_log), k = 1)        # H0: raíz unitaria
+kpss_log <- urca::ur.kpss(na.omit(ts_log), type = "tau")     # H0: estacionaria (tendencia)
+
+list(
+  ADF_p_value_log   = adf_log$p.value,
+  KPSS_stat_log     = kpss_log@teststat,
+  KPSS_critical_log = kpss_log@cval
+)
+
+# 4) Diferenciación (Δlog ⇒ aprox. crecimiento %)
+diff_log <- diff(ts_log)
+
+op <- par(mfrow = c(2,2), mar = c(3,4,2,1))
+plot(ts_log,   main = "Serie log(PIB pc)",     ylab = "log(US$)")
+plot(diff_log, main = "Primera diferencia",    ylab = "Δlog(US$)")
+acf (diff_log, main = "ACF Δlog(PIB pc)")
+pacf(diff_log, main = "PACF Δlog(PIB pc)")
+par(op)
+
+# 5) Estacionariedad (serie diferenciada)
+adf_diff  <- tseries::adf.test(na.omit(diff_log), k = 1)
+kpss_diff <- urca::ur.kpss(na.omit(diff_log), type = "mu")    # H0: estacionaria (nivel)
+
+list(
+  ADF_p_value_diff   = adf_diff$p.value,
+  KPSS_stat_diff     = kpss_diff@teststat,
+  KPSS_critical_diff = kpss_diff@cval
+)
+```
+
+
+- **Descomposición:** al ser anual (**frecuencia = 1**), **no existe estacionalidad**. Se estimó una **tendencia** mediante LOESS y se definió el **residuo** como la parte no explicada por la tendencia.  
+- **Estacionariedad:** en **log(nivel)** la serie no es estacionaria (tendencia marcada; ADF no rechaza H0 y/o KPSS rechaza H0 al 5%).  
+- **Diferenciación:** con **Δlog** la serie se vuelve compatible con estacionariedad (ADF rechaza H0 y KPSS no rechaza H0).  
+- **Transformaciones necesarias:** **log** para estabilizar variabilidad y **diferencia de orden 1** para remover tendencia; esto prepara la serie para modelos ARIMA/ETS.
+
+**Conclusiones:**
+
+La serie anual de PIB per cápita presenta una tendencia creciente sostenida y no muestra estacionalidad al ser de frecuencia 1 (anual).
+
+Se aplicó una transformación logarítmica para estabilizar la varianza y expresar la dinámica en términos relativos (proporcionales).
+
+Las pruebas ADF y KPSS confirman que la serie no es estacionaria en niveles, pero sí lo es tras una primera diferenciación del logaritmo, que equivale al crecimiento porcentual anual del PIB per cápita.
+
+Por tanto, las transformaciones log() y Δlog() son necesarias y justificadas para preparar la serie hacia modelado ARIMA/ETS.
+
+El análisis indica que la estructura temporal del PIB per cápita colombiano está dominada por una tendencia de largo plazo asociada a crecimiento económico, sin evidencia de ciclos regulares o estacionalidad recurrente.
