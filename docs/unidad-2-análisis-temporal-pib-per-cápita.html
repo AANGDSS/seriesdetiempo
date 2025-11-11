@@ -23,7 +23,7 @@
 <meta name="author" content="Angel David Sanchez Serna" />
 
 
-<meta name="date" content="2025-10-27" />
+<meta name="date" content="2025-11-10" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -193,7 +193,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb1-2" tabindex="-1"></a><span class="fu">library</span>(wbstats)    <span class="co"># otra interfaz al API del Banco Mundial</span></span>
 <span id="cb1-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb1-3" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb1-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb1-4" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb1-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb1-5" tabindex="-1"></a><span class="fu">library</span>(zoo)</span></code></pre></div>
+<span id="cb1-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb1-5" tabindex="-1"></a><span class="fu">library</span>(zoo)</span>
+<span id="cb1-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb1-6" tabindex="-1"></a><span class="fu">library</span>(forecast)</span></code></pre></div>
 </div>
 <div id="descarga-y-preparación-de-pib-per-cápita-serie-estable" class="section level2 hasAnchor" number="2.2">
 <h2><span class="header-section-number">2.2</span> Descarga y preparación de PIB per cápita (serie estable)<a href="unidad-2-análisis-temporal-pib-per-cápita.html#descarga-y-preparaci%C3%B3n-de-pib-per-c%C3%A1pita-serie-estable" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -258,7 +259,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb7-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb7-7" tabindex="-1"></a><span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;PIB per cápita y promedio móvil (5 años)&quot;</span>,</span>
 <span id="cb7-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb7-8" tabindex="-1"></a><span class="at">x =</span> <span class="st">&quot;Año&quot;</span>, <span class="at">y =</span> <span class="st">&quot;US$ actuales por persona&quot;</span>) <span class="sc">+</span></span>
 <span id="cb7-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb7-9" tabindex="-1"></a><span class="fu">theme_minimal</span>()</span></code></pre></div>
-<pre><code>## Warning: Removed 4 rows containing missing values or values outside the scale range (`geom_line()`).</code></pre>
+<pre><code>## Warning: Removed 4 rows containing missing values or values outside the scale range
+## (`geom_line()`).</code></pre>
 <p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 </div>
 <div id="rezagos-y-acf-dependencia-temporal" class="section level2 hasAnchor" number="2.5">
@@ -273,8 +275,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb9-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb9-8" tabindex="-1"></a><span class="at">x =</span> <span class="st">&quot;PIB per cápita año t−1&quot;</span>, <span class="at">y =</span> <span class="st">&quot;PIB per cápita año t&quot;</span>) <span class="sc">+</span></span>
 <span id="cb9-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb9-9" tabindex="-1"></a><span class="fu">theme_minimal</span>()</span></code></pre></div>
 <pre><code>## `geom_smooth()` using formula = &#39;y ~ x&#39;</code></pre>
-<pre><code>## Warning: Removed 1 row containing non-finite outside the scale range (`stat_smooth()`).</code></pre>
-<pre><code>## Warning: Removed 1 row containing missing values or values outside the scale range (`geom_point()`).</code></pre>
+<pre><code>## Warning: Removed 1 row containing non-finite outside the scale range
+## (`stat_smooth()`).</code></pre>
+<pre><code>## Warning: Removed 1 row containing missing values or values outside the scale range
+## (`geom_point()`).</code></pre>
 <p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb13-1" tabindex="-1"></a>ts_gdp <span class="ot">&lt;-</span> <span class="fu">ts</span>(gdp_col<span class="sc">$</span>gdp, <span class="at">start =</span> <span class="fu">min</span>(gdp_col<span class="sc">$</span>year), <span class="at">frequency =</span> <span class="dv">1</span>)</span>
 <span id="cb13-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb13-2" tabindex="-1"></a><span class="fu">acf</span>(ts_gdp, <span class="at">main =</span> <span class="st">&quot;ACF — PIB per cápita (anual)&quot;</span>)</span></code></pre></div>
@@ -349,47 +353,49 @@ La dinámica observable es de tendencia/ciclos de largo plazo. Para estacionalid
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-1" tabindex="-1"></a><span class="co"># Descomposición (anual sin estacionalidad), estacionariedad y diferenciación</span></span>
 <span id="cb16-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-2" tabindex="-1"></a></span>
 <span id="cb16-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-3" tabindex="-1"></a><span class="co"># Cargar paquetes (asegúrate de tenerlos instalados previamente)</span></span>
-<span id="cb16-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-4" tabindex="-1"></a><span class="fu">library</span>(tseries)</span>
-<span id="cb16-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-5" tabindex="-1"></a><span class="fu">library</span>(urca)</span>
-<span id="cb16-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-6" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb16-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-7" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-8" tabindex="-1"></a><span class="co"># 1) Serie de Colombia en log (control de variabilidad)</span></span>
-<span id="cb16-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-9" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">&quot;gdp_col&quot;</span>)) {</span>
-<span id="cb16-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-10" tabindex="-1"></a>  gdp_col <span class="ot">&lt;-</span> dat_gdp <span class="sc">%&gt;%</span></span>
-<span id="cb16-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-11" tabindex="-1"></a>    <span class="fu">filter</span>(country <span class="sc">==</span> <span class="st">&quot;Colombia&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb16-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-12" tabindex="-1"></a>    <span class="fu">arrange</span>(year)</span>
-<span id="cb16-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-13" tabindex="-1"></a>}</span>
-<span id="cb16-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-14" tabindex="-1"></a></span>
-<span id="cb16-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-15" tabindex="-1"></a>gdp_col <span class="ot">&lt;-</span> gdp_col <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">log_gdp =</span> <span class="fu">log</span>(gdp))</span>
-<span id="cb16-16"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-16" tabindex="-1"></a>ts_log  <span class="ot">&lt;-</span> <span class="fu">ts</span>(gdp_col<span class="sc">$</span>log_gdp,</span>
-<span id="cb16-17"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-17" tabindex="-1"></a>              <span class="at">start =</span> <span class="fu">min</span>(gdp_col<span class="sc">$</span>year, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb16-18"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-18" tabindex="-1"></a>              <span class="at">frequency =</span> <span class="dv">1</span>)  <span class="co"># anual ⇒ sin estacionalidad</span></span>
-<span id="cb16-19"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-19" tabindex="-1"></a></span>
-<span id="cb16-20"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-20" tabindex="-1"></a><span class="co"># 2) &quot;Descomposición&quot; compatible con frecuencia 1:</span></span>
-<span id="cb16-21"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-21" tabindex="-1"></a><span class="co">#    Tendencia por LOESS + Residuo = log(PIB) - Tendencia</span></span>
-<span id="cb16-22"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-22" tabindex="-1"></a>df_loess <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">year =</span> gdp_col<span class="sc">$</span>year, <span class="at">log_gdp =</span> <span class="fu">as.numeric</span>(ts_log))</span>
-<span id="cb16-23"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-23" tabindex="-1"></a>fit      <span class="ot">&lt;-</span> <span class="fu">loess</span>(log_gdp <span class="sc">~</span> year, <span class="at">data =</span> df_loess, <span class="at">span =</span> <span class="fl">0.3</span>, <span class="at">degree =</span> <span class="dv">1</span>)</span>
-<span id="cb16-24"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-24" tabindex="-1"></a>trend    <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> df_loess),</span>
-<span id="cb16-25"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-25" tabindex="-1"></a>               <span class="at">start =</span> <span class="fu">start</span>(ts_log), <span class="at">frequency =</span> <span class="fu">frequency</span>(ts_log))</span>
-<span id="cb16-26"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-26" tabindex="-1"></a>remainder <span class="ot">&lt;-</span> ts_log <span class="sc">-</span> trend</span>
-<span id="cb16-27"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-27" tabindex="-1"></a></span>
-<span id="cb16-28"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-28" tabindex="-1"></a><span class="co"># Gráfico de los tres componentes</span></span>
-<span id="cb16-29"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-29" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">1</span>))</span>
-<span id="cb16-30"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-30" tabindex="-1"></a><span class="fu">plot</span>(ts_log,    <span class="at">main =</span> <span class="st">&quot;log(PIB per cápita) — Colombia&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span>
-<span id="cb16-31"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-31" tabindex="-1"></a><span class="fu">plot</span>(trend,     <span class="at">main =</span> <span class="st">&quot;Tendencia (LOESS)&quot;</span>,              <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span>
-<span id="cb16-32"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-32" tabindex="-1"></a><span class="fu">plot</span>(remainder, <span class="at">main =</span> <span class="st">&quot;Residuo&quot;</span>,                        <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span></code></pre></div>
+<span id="cb16-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb16-4" tabindex="-1"></a><span class="fu">library</span>(tseries)</span></code></pre></div>
+<pre><code>## Warning: package &#39;tseries&#39; was built under R version 4.4.3</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb18-1" tabindex="-1"></a><span class="fu">library</span>(urca)</span></code></pre></div>
+<pre><code>## Warning: package &#39;urca&#39; was built under R version 4.4.3</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-1" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb20-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-2" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-3" tabindex="-1"></a><span class="co"># 1) Serie de Colombia en log (control de variabilidad)</span></span>
+<span id="cb20-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-4" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">&quot;gdp_col&quot;</span>)) {</span>
+<span id="cb20-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-5" tabindex="-1"></a>  gdp_col <span class="ot">&lt;-</span> dat_gdp <span class="sc">%&gt;%</span></span>
+<span id="cb20-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-6" tabindex="-1"></a>    <span class="fu">filter</span>(country <span class="sc">==</span> <span class="st">&quot;Colombia&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-7" tabindex="-1"></a>    <span class="fu">arrange</span>(year)</span>
+<span id="cb20-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-8" tabindex="-1"></a>}</span>
+<span id="cb20-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-9" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-10" tabindex="-1"></a>gdp_col <span class="ot">&lt;-</span> gdp_col <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">log_gdp =</span> <span class="fu">log</span>(gdp))</span>
+<span id="cb20-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-11" tabindex="-1"></a>ts_log  <span class="ot">&lt;-</span> <span class="fu">ts</span>(gdp_col<span class="sc">$</span>log_gdp,</span>
+<span id="cb20-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-12" tabindex="-1"></a>              <span class="at">start =</span> <span class="fu">min</span>(gdp_col<span class="sc">$</span>year, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb20-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-13" tabindex="-1"></a>              <span class="at">frequency =</span> <span class="dv">1</span>)  <span class="co"># anual ⇒ sin estacionalidad</span></span>
+<span id="cb20-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-14" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-15" tabindex="-1"></a><span class="co"># 2) &quot;Descomposición&quot; compatible con frecuencia 1:</span></span>
+<span id="cb20-16"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-16" tabindex="-1"></a><span class="co">#    Tendencia por LOESS + Residuo = log(PIB) - Tendencia</span></span>
+<span id="cb20-17"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-17" tabindex="-1"></a>df_loess <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">year =</span> gdp_col<span class="sc">$</span>year, <span class="at">log_gdp =</span> <span class="fu">as.numeric</span>(ts_log))</span>
+<span id="cb20-18"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-18" tabindex="-1"></a>fit      <span class="ot">&lt;-</span> <span class="fu">loess</span>(log_gdp <span class="sc">~</span> year, <span class="at">data =</span> df_loess, <span class="at">span =</span> <span class="fl">0.3</span>, <span class="at">degree =</span> <span class="dv">1</span>)</span>
+<span id="cb20-19"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-19" tabindex="-1"></a>trend    <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">predict</span>(fit, <span class="at">newdata =</span> df_loess),</span>
+<span id="cb20-20"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-20" tabindex="-1"></a>               <span class="at">start =</span> <span class="fu">start</span>(ts_log), <span class="at">frequency =</span> <span class="fu">frequency</span>(ts_log))</span>
+<span id="cb20-21"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-21" tabindex="-1"></a>remainder <span class="ot">&lt;-</span> ts_log <span class="sc">-</span> trend</span>
+<span id="cb20-22"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-22" tabindex="-1"></a></span>
+<span id="cb20-23"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-23" tabindex="-1"></a><span class="co"># Gráfico de los tres componentes</span></span>
+<span id="cb20-24"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-24" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">1</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">1</span>))</span>
+<span id="cb20-25"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-25" tabindex="-1"></a><span class="fu">plot</span>(ts_log,    <span class="at">main =</span> <span class="st">&quot;log(PIB per cápita) — Colombia&quot;</span>, <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span>
+<span id="cb20-26"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-26" tabindex="-1"></a><span class="fu">plot</span>(trend,     <span class="at">main =</span> <span class="st">&quot;Tendencia (LOESS)&quot;</span>,              <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span>
+<span id="cb20-27"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-27" tabindex="-1"></a><span class="fu">plot</span>(remainder, <span class="at">main =</span> <span class="st">&quot;Residuo&quot;</span>,                        <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span></code></pre></div>
 <p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-1" tabindex="-1"></a><span class="fu">par</span>(op)</span>
-<span id="cb17-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-2" tabindex="-1"></a></span>
-<span id="cb17-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-3" tabindex="-1"></a><span class="co"># 3) Estacionariedad (log nivel)</span></span>
-<span id="cb17-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-4" tabindex="-1"></a>adf_log  <span class="ot">&lt;-</span> tseries<span class="sc">::</span><span class="fu">adf.test</span>(<span class="fu">na.omit</span>(ts_log), <span class="at">k =</span> <span class="dv">1</span>)        <span class="co"># H0: raíz unitaria</span></span>
-<span id="cb17-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-5" tabindex="-1"></a>kpss_log <span class="ot">&lt;-</span> urca<span class="sc">::</span><span class="fu">ur.kpss</span>(<span class="fu">na.omit</span>(ts_log), <span class="at">type =</span> <span class="st">&quot;tau&quot;</span>)     <span class="co"># H0: estacionaria (tendencia)</span></span>
-<span id="cb17-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-6" tabindex="-1"></a></span>
-<span id="cb17-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-7" tabindex="-1"></a><span class="fu">list</span>(</span>
-<span id="cb17-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-8" tabindex="-1"></a>  <span class="at">ADF_p_value_log   =</span> adf_log<span class="sc">$</span>p.value,</span>
-<span id="cb17-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-9" tabindex="-1"></a>  <span class="at">KPSS_stat_log     =</span> kpss_log<span class="sc">@</span>teststat,</span>
-<span id="cb17-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-10" tabindex="-1"></a>  <span class="at">KPSS_critical_log =</span> kpss_log<span class="sc">@</span>cval</span>
-<span id="cb17-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb17-11" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-1" tabindex="-1"></a><span class="fu">par</span>(op)</span>
+<span id="cb21-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-2" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-3" tabindex="-1"></a><span class="co"># 3) Estacionariedad (log nivel)</span></span>
+<span id="cb21-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-4" tabindex="-1"></a>adf_log  <span class="ot">&lt;-</span> tseries<span class="sc">::</span><span class="fu">adf.test</span>(<span class="fu">na.omit</span>(ts_log), <span class="at">k =</span> <span class="dv">1</span>)        <span class="co"># H0: raíz unitaria</span></span>
+<span id="cb21-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-5" tabindex="-1"></a>kpss_log <span class="ot">&lt;-</span> urca<span class="sc">::</span><span class="fu">ur.kpss</span>(<span class="fu">na.omit</span>(ts_log), <span class="at">type =</span> <span class="st">&quot;tau&quot;</span>)     <span class="co"># H0: estacionaria (tendencia)</span></span>
+<span id="cb21-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-6" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-7" tabindex="-1"></a><span class="fu">list</span>(</span>
+<span id="cb21-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-8" tabindex="-1"></a>  <span class="at">ADF_p_value_log   =</span> adf_log<span class="sc">$</span>p.value,</span>
+<span id="cb21-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-9" tabindex="-1"></a>  <span class="at">KPSS_stat_log     =</span> kpss_log<span class="sc">@</span>teststat,</span>
+<span id="cb21-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-10" tabindex="-1"></a>  <span class="at">KPSS_critical_log =</span> kpss_log<span class="sc">@</span>cval</span>
+<span id="cb21-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb21-11" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## $ADF_p_value_log
 ## [1] 0.4985886
 ## 
@@ -399,27 +405,28 @@ La dinámica observable es de tendencia/ciclos de largo plazo. Para estacionalid
 ## $KPSS_critical_log
 ##                 10pct  5pct 2.5pct  1pct
 ## critical values 0.119 0.146  0.176 0.216</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-1" tabindex="-1"></a><span class="co"># 4) Diferenciación (Δlog ⇒ aprox. crecimiento %)</span></span>
-<span id="cb19-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-2" tabindex="-1"></a>diff_log <span class="ot">&lt;-</span> <span class="fu">diff</span>(ts_log)</span>
-<span id="cb19-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-3" tabindex="-1"></a></span>
-<span id="cb19-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-4" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">1</span>))</span>
-<span id="cb19-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-5" tabindex="-1"></a><span class="fu">plot</span>(ts_log,   <span class="at">main =</span> <span class="st">&quot;Serie log(PIB pc)&quot;</span>,     <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span>
-<span id="cb19-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-6" tabindex="-1"></a><span class="fu">plot</span>(diff_log, <span class="at">main =</span> <span class="st">&quot;Primera diferencia&quot;</span>,    <span class="at">ylab =</span> <span class="st">&quot;Δlog(US$)&quot;</span>)</span>
-<span id="cb19-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-7" tabindex="-1"></a><span class="fu">acf</span> (diff_log, <span class="at">main =</span> <span class="st">&quot;ACF Δlog(PIB pc)&quot;</span>)</span>
-<span id="cb19-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb19-8" tabindex="-1"></a><span class="fu">pacf</span>(diff_log, <span class="at">main =</span> <span class="st">&quot;PACF Δlog(PIB pc)&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-1" tabindex="-1"></a><span class="co"># 4) Diferenciación (Δlog ⇒ aprox. crecimiento %)</span></span>
+<span id="cb23-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-2" tabindex="-1"></a>diff_log <span class="ot">&lt;-</span> <span class="fu">diff</span>(ts_log)</span>
+<span id="cb23-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-3" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-4" tabindex="-1"></a>op <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">1</span>))</span>
+<span id="cb23-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-5" tabindex="-1"></a><span class="fu">plot</span>(ts_log,   <span class="at">main =</span> <span class="st">&quot;Serie log(PIB pc)&quot;</span>,     <span class="at">ylab =</span> <span class="st">&quot;log(US$)&quot;</span>)</span>
+<span id="cb23-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-6" tabindex="-1"></a><span class="fu">plot</span>(diff_log, <span class="at">main =</span> <span class="st">&quot;Primera diferencia&quot;</span>,    <span class="at">ylab =</span> <span class="st">&quot;Δlog(US$)&quot;</span>)</span>
+<span id="cb23-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-7" tabindex="-1"></a><span class="fu">acf</span> (diff_log, <span class="at">main =</span> <span class="st">&quot;ACF Δlog(PIB pc)&quot;</span>)</span>
+<span id="cb23-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb23-8" tabindex="-1"></a><span class="fu">pacf</span>(diff_log, <span class="at">main =</span> <span class="st">&quot;PACF Δlog(PIB pc)&quot;</span>)</span></code></pre></div>
 <p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-1" tabindex="-1"></a><span class="fu">par</span>(op)</span>
-<span id="cb20-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-2" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-3" tabindex="-1"></a><span class="co"># 5) Estacionariedad (serie diferenciada)</span></span>
-<span id="cb20-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb20-4" tabindex="-1"></a>adf_diff  <span class="ot">&lt;-</span> tseries<span class="sc">::</span><span class="fu">adf.test</span>(<span class="fu">na.omit</span>(diff_log), <span class="at">k =</span> <span class="dv">1</span>)</span></code></pre></div>
-<pre><code>## Warning in tseries::adf.test(na.omit(diff_log), k = 1): p-value smaller than printed p-value</code></pre>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb22-1" tabindex="-1"></a>kpss_diff <span class="ot">&lt;-</span> urca<span class="sc">::</span><span class="fu">ur.kpss</span>(<span class="fu">na.omit</span>(diff_log), <span class="at">type =</span> <span class="st">&quot;mu&quot;</span>)    <span class="co"># H0: estacionaria (nivel)</span></span>
-<span id="cb22-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb22-2" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb22-3" tabindex="-1"></a><span class="fu">list</span>(</span>
-<span id="cb22-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb22-4" tabindex="-1"></a>  <span class="at">ADF_p_value_diff   =</span> adf_diff<span class="sc">$</span>p.value,</span>
-<span id="cb22-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb22-5" tabindex="-1"></a>  <span class="at">KPSS_stat_diff     =</span> kpss_diff<span class="sc">@</span>teststat,</span>
-<span id="cb22-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb22-6" tabindex="-1"></a>  <span class="at">KPSS_critical_diff =</span> kpss_diff<span class="sc">@</span>cval</span>
-<span id="cb22-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb22-7" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb24-1" tabindex="-1"></a><span class="fu">par</span>(op)</span>
+<span id="cb24-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb24-2" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb24-3" tabindex="-1"></a><span class="co"># 5) Estacionariedad (serie diferenciada)</span></span>
+<span id="cb24-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb24-4" tabindex="-1"></a>adf_diff  <span class="ot">&lt;-</span> tseries<span class="sc">::</span><span class="fu">adf.test</span>(<span class="fu">na.omit</span>(diff_log), <span class="at">k =</span> <span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## Warning in tseries::adf.test(na.omit(diff_log), k = 1): p-value smaller than
+## printed p-value</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb26-1" tabindex="-1"></a>kpss_diff <span class="ot">&lt;-</span> urca<span class="sc">::</span><span class="fu">ur.kpss</span>(<span class="fu">na.omit</span>(diff_log), <span class="at">type =</span> <span class="st">&quot;mu&quot;</span>)    <span class="co"># H0: estacionaria (nivel)</span></span>
+<span id="cb26-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb26-2" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb26-3" tabindex="-1"></a><span class="fu">list</span>(</span>
+<span id="cb26-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb26-4" tabindex="-1"></a>  <span class="at">ADF_p_value_diff   =</span> adf_diff<span class="sc">$</span>p.value,</span>
+<span id="cb26-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb26-5" tabindex="-1"></a>  <span class="at">KPSS_stat_diff     =</span> kpss_diff<span class="sc">@</span>teststat,</span>
+<span id="cb26-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb26-6" tabindex="-1"></a>  <span class="at">KPSS_critical_diff =</span> kpss_diff<span class="sc">@</span>cval</span>
+<span id="cb26-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb26-7" tabindex="-1"></a>)</span></code></pre></div>
 <pre><code>## $ADF_p_value_diff
 ## [1] 0.01
 ## 
@@ -444,6 +451,349 @@ La dinámica observable es de tendencia/ciclos de largo plazo. Para estacionalid
 <p>Las pruebas ADF y KPSS confirman que la serie no es estacionaria en niveles, pero sí lo es tras una primera diferenciación del logaritmo, que equivale al crecimiento porcentual anual del PIB per cápita.</p>
 <p>Por tanto, las transformaciones log() y Δlog() son necesarias y justificadas para preparar la serie hacia modelado ARIMA/ETS.</p>
 <p>El análisis indica que la estructura temporal del PIB per cápita colombiano está dominada por una tendencia de largo plazo asociada a crecimiento económico, sin evidencia de ciclos regulares o estacionalidad recurrente.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-1" tabindex="-1"></a><span class="co"># --- Serie base (Colombia) en log para estabilizar variabilidad ---</span></span>
+<span id="cb28-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-2" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">&quot;dat_gdp&quot;</span>)) <span class="fu">stop</span>(<span class="st">&quot;dat_gdp no existe en el entorno.&quot;</span>)</span>
+<span id="cb28-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-3" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">&quot;gdp_col&quot;</span>)) {</span>
+<span id="cb28-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-4" tabindex="-1"></a>  gdp_col <span class="ot">&lt;-</span> dat_gdp <span class="sc">%&gt;%</span> <span class="fu">filter</span>(country <span class="sc">==</span> <span class="st">&quot;Colombia&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(year)</span>
+<span id="cb28-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-5" tabindex="-1"></a>}</span>
+<span id="cb28-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-6" tabindex="-1"></a>ts_log <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">log</span>(gdp_col<span class="sc">$</span>gdp),</span>
+<span id="cb28-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-7" tabindex="-1"></a>             <span class="at">start =</span> <span class="fu">min</span>(gdp_col<span class="sc">$</span>year, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb28-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-8" tabindex="-1"></a>             <span class="at">frequency =</span> <span class="dv">1</span>)  <span class="co"># anual (sin estacionalidad intra-anual)</span></span>
+<span id="cb28-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-9" tabindex="-1"></a></span>
+<span id="cb28-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-10" tabindex="-1"></a><span class="co"># --- Partición entrenamiento/prueba ---</span></span>
+<span id="cb28-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-11" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(ts_log)</span>
+<span id="cb28-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-12" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="dv">10</span>, <span class="fu">max</span>(<span class="dv">3</span>, <span class="fu">floor</span>(n <span class="sc">*</span> <span class="fl">0.15</span>)))  <span class="co"># horizonte: hasta 10 años, al menos 3</span></span>
+<span id="cb28-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-13" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">window</span>(ts_log, <span class="at">end =</span> <span class="fu">time</span>(ts_log)[n <span class="sc">-</span> h])</span>
+<span id="cb28-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-14" tabindex="-1"></a>test  <span class="ot">&lt;-</span> <span class="fu">window</span>(ts_log, <span class="at">start =</span> <span class="fu">time</span>(ts_log)[n <span class="sc">-</span> h <span class="sc">+</span> <span class="dv">1</span>])</span>
+<span id="cb28-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-15" tabindex="-1"></a></span>
+<span id="cb28-16"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-16" tabindex="-1"></a><span class="co"># --- Modelos ETS sin estacionalidad ---</span></span>
+<span id="cb28-17"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-17" tabindex="-1"></a>fit_ses  <span class="ot">&lt;-</span> <span class="fu">ets</span>(train, <span class="at">model =</span> <span class="st">&quot;ANN&quot;</span>)                   <span class="co"># SES</span></span>
+<span id="cb28-18"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-18" tabindex="-1"></a>fit_holt <span class="ot">&lt;-</span> <span class="fu">ets</span>(train, <span class="at">model =</span> <span class="st">&quot;AAN&quot;</span>)                   <span class="co"># Holt (tendencia)</span></span>
+<span id="cb28-19"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-19" tabindex="-1"></a>fit_dmp  <span class="ot">&lt;-</span> <span class="fu">ets</span>(train, <span class="at">model =</span> <span class="st">&quot;AAN&quot;</span>, <span class="at">damped =</span> <span class="cn">TRUE</span>)    <span class="co"># Holt amortiguado (damped)</span></span>
+<span id="cb28-20"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-20" tabindex="-1"></a></span>
+<span id="cb28-21"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-21" tabindex="-1"></a><span class="co"># --- Pronósticos ---</span></span>
+<span id="cb28-22"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-22" tabindex="-1"></a>fc_ses   <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_ses,  <span class="at">h =</span> h)</span>
+<span id="cb28-23"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-23" tabindex="-1"></a>fc_holt  <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_holt, <span class="at">h =</span> h)</span>
+<span id="cb28-24"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-24" tabindex="-1"></a>fc_dmp   <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_dmp,  <span class="at">h =</span> h)</span>
+<span id="cb28-25"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-25" tabindex="-1"></a></span>
+<span id="cb28-26"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-26" tabindex="-1"></a><span class="co"># --- Métricas de evaluación (en log) ---</span></span>
+<span id="cb28-27"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-27" tabindex="-1"></a>acc <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb28-28"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-28" tabindex="-1"></a>  <span class="at">SES    =</span> <span class="fu">accuracy</span>(fc_ses,  test),</span>
+<span id="cb28-29"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-29" tabindex="-1"></a>  <span class="at">Holt   =</span> <span class="fu">accuracy</span>(fc_holt, test),</span>
+<span id="cb28-30"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-30" tabindex="-1"></a>  <span class="at">Damped =</span> <span class="fu">accuracy</span>(fc_dmp,  test)</span>
+<span id="cb28-31"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-31" tabindex="-1"></a>)[, <span class="fu">c</span>(<span class="st">&quot;ME&quot;</span>,<span class="st">&quot;RMSE&quot;</span>,<span class="st">&quot;MAE&quot;</span>,<span class="st">&quot;MAPE&quot;</span>,<span class="st">&quot;ACF1&quot;</span>)]</span>
+<span id="cb28-32"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-32" tabindex="-1"></a>acc_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Model =</span> <span class="fu">rownames</span>(acc), acc, <span class="at">row.names =</span> <span class="cn">NULL</span>)</span>
+<span id="cb28-33"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-33" tabindex="-1"></a></span>
+<span id="cb28-34"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-34" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">requireNamespace</span>(<span class="st">&quot;knitr&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb28-35"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-35" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(acc_df, <span class="at">digits =</span> <span class="dv">3</span>, <span class="at">caption =</span> <span class="st">&quot;Comparación de modelos ETS (evaluación en log)&quot;</span>)</span>
+<span id="cb28-36"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-36" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb28-37"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-37" tabindex="-1"></a>  <span class="fu">print</span>(acc_df)</span>
+<span id="cb28-38"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb28-38" tabindex="-1"></a>}</span></code></pre></div>
+<table>
+<caption><span id="tab:unnamed-chunk-7">Table 2.1: </span>Comparación de modelos ETS (evaluación en log)</caption>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="right">ME</th>
+<th align="right">RMSE</th>
+<th align="right">MAE</th>
+<th align="right">MAPE</th>
+<th align="right">ACF1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Training set</td>
+<td align="right">0.064</td>
+<td align="right">0.114</td>
+<td align="right">0.095</td>
+<td align="right">1.323</td>
+<td align="right">0.270</td>
+</tr>
+<tr class="even">
+<td align="left">Test set</td>
+<td align="right">-0.249</td>
+<td align="right">0.272</td>
+<td align="right">0.249</td>
+<td align="right">2.860</td>
+<td align="right">-0.001</td>
+</tr>
+<tr class="odd">
+<td align="left">Training set</td>
+<td align="right">0.018</td>
+<td align="right">0.091</td>
+<td align="right">0.074</td>
+<td align="right">1.034</td>
+<td align="right">0.008</td>
+</tr>
+<tr class="even">
+<td align="left">Test set</td>
+<td align="right">-0.402</td>
+<td align="right">0.425</td>
+<td align="right">0.402</td>
+<td align="right">4.605</td>
+<td align="right">0.184</td>
+</tr>
+<tr class="odd">
+<td align="left">Training set</td>
+<td align="right">0.018</td>
+<td align="right">0.091</td>
+<td align="right">0.074</td>
+<td align="right">1.034</td>
+<td align="right">0.008</td>
+</tr>
+<tr class="even">
+<td align="left">Test set</td>
+<td align="right">-0.402</td>
+<td align="right">0.425</td>
+<td align="right">0.402</td>
+<td align="right">4.605</td>
+<td align="right">0.184</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-1" tabindex="-1"></a><span class="co"># --- Selección del mejor por RMSE ---</span></span>
+<span id="cb29-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-2" tabindex="-1"></a>best_name <span class="ot">&lt;-</span> acc_df<span class="sc">$</span>Model[ <span class="fu">which.min</span>(acc_df<span class="sc">$</span>RMSE) ]</span>
+<span id="cb29-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-3" tabindex="-1"></a>best_fit  <span class="ot">&lt;-</span> <span class="cf">switch</span>(best_name,</span>
+<span id="cb29-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-4" tabindex="-1"></a>                    <span class="at">SES    =</span> fit_ses,</span>
+<span id="cb29-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-5" tabindex="-1"></a>                    <span class="at">Holt   =</span> fit_holt,</span>
+<span id="cb29-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-6" tabindex="-1"></a>                    <span class="at">Damped =</span> fit_dmp)</span>
+<span id="cb29-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-7" tabindex="-1"></a>best_fc   <span class="ot">&lt;-</span> <span class="cf">switch</span>(best_name,</span>
+<span id="cb29-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-8" tabindex="-1"></a>                    <span class="at">SES    =</span> fc_ses,</span>
+<span id="cb29-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-9" tabindex="-1"></a>                    <span class="at">Holt   =</span> fc_holt,</span>
+<span id="cb29-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-10" tabindex="-1"></a>                    <span class="at">Damped =</span> fc_dmp)</span>
+<span id="cb29-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-11" tabindex="-1"></a></span>
+<span id="cb29-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb29-12" tabindex="-1"></a>best_name  <span class="co"># nombre del modelo seleccionado</span></span></code></pre></div>
+<pre><code>## [1] &quot;Training set&quot;</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-1" tabindex="-1"></a><span class="co"># --- Gráfico comparativo de pronósticos en nivel (re-exponenciados) ---</span></span>
+<span id="cb31-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-2" tabindex="-1"></a>p_comp <span class="ot">&lt;-</span> <span class="fu">autoplot</span>(<span class="fu">exp</span>(ts_log)) <span class="sc">+</span></span>
+<span id="cb31-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-3" tabindex="-1"></a>  <span class="fu">autolayer</span>(<span class="fu">exp</span>(fc_ses<span class="sc">$</span>mean),  <span class="at">series =</span> <span class="st">&quot;SES&quot;</span>,               <span class="at">lwd =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb31-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-4" tabindex="-1"></a>  <span class="fu">autolayer</span>(<span class="fu">exp</span>(fc_holt<span class="sc">$</span>mean), <span class="at">series =</span> <span class="st">&quot;Holt&quot;</span>,              <span class="at">lwd =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb31-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-5" tabindex="-1"></a>  <span class="fu">autolayer</span>(<span class="fu">exp</span>(fc_dmp<span class="sc">$</span>mean),  <span class="at">series =</span> <span class="st">&quot;Holt amortiguado&quot;</span>,  <span class="at">lwd =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb31-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-6" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;PIB per cápita (Colombia): Suavizamiento exponencial (ETS)&quot;</span>,</span>
+<span id="cb31-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-7" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Año&quot;</span>, <span class="at">y =</span> <span class="st">&quot;US$ por persona (nivel)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb31-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-8" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb31-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb31-9" tabindex="-1"></a><span class="fu">print</span>(p_comp)</span></code></pre></div>
+<p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-1" tabindex="-1"></a><span class="co"># --- Diagnóstico de residuos (robusto) ---</span></span>
+<span id="cb32-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-2" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">residuals</span>(best_fit), <span class="at">silent =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb32-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-3" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">inherits</span>(res, <span class="st">&quot;try-error&quot;</span>) <span class="sc">||</span> <span class="fu">is.null</span>(res)) {</span>
+<span id="cb32-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-4" tabindex="-1"></a>  fitted_vals <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">fitted</span>(best_fit), <span class="at">silent =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb32-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-5" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">inherits</span>(fitted_vals, <span class="st">&quot;try-error&quot;</span>) <span class="sc">&amp;&amp;</span> <span class="sc">!</span><span class="fu">is.null</span>(fitted_vals)) {</span>
+<span id="cb32-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-6" tabindex="-1"></a>    len <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">length</span>(train), <span class="fu">length</span>(fitted_vals))</span>
+<span id="cb32-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-7" tabindex="-1"></a>    res <span class="ot">&lt;-</span> train[<span class="fu">seq_len</span>(len)] <span class="sc">-</span> fitted_vals[<span class="fu">seq_len</span>(len)]</span>
+<span id="cb32-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-8" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb32-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-9" tabindex="-1"></a>    res <span class="ot">&lt;-</span> train <span class="sc">-</span> <span class="fu">mean</span>(train, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)  <span class="co"># fallback</span></span>
+<span id="cb32-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-10" tabindex="-1"></a>  }</span>
+<span id="cb32-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-11" tabindex="-1"></a>}</span>
+<span id="cb32-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-12" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">na.omit</span>(res))</span>
+<span id="cb32-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-13" tabindex="-1"></a></span>
+<span id="cb32-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-14" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">1</span>))</span>
+<span id="cb32-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-15" tabindex="-1"></a><span class="fu">acf</span>(res,  <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">&quot;ACF residuos —&quot;</span>, best_name))</span>
+<span id="cb32-16"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb32-16" tabindex="-1"></a><span class="fu">pacf</span>(res, <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">&quot;PACF residuos —&quot;</span>, best_name))</span></code></pre></div>
+<p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-7-2.png" width="672" /></p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb33-1" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb33-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb33-2" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb33-3" tabindex="-1"></a>lb <span class="ot">&lt;-</span> <span class="fu">Box.test</span>(res, <span class="at">lag =</span> <span class="fu">min</span>(<span class="dv">10</span>, <span class="fu">length</span>(res) <span class="sc">-</span> <span class="dv">1</span>), <span class="at">type =</span> <span class="st">&quot;Ljung-Box&quot;</span>)</span>
+<span id="cb33-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb33-4" tabindex="-1"></a>lb</span></code></pre></div>
+<pre><code>## 
+##  Box-Ljung test
+## 
+## data:  res
+## X-squared = 278.5, df = 10, p-value &lt; 2.2e-16</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-1" tabindex="-1"></a><span class="co"># --- Pronóstico final del modelo seleccionado (en nivel con intervalos) ---</span></span>
+<span id="cb35-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-2" tabindex="-1"></a><span class="co"># Construimos los años futuros de forma segura (anual):</span></span>
+<span id="cb35-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-3" tabindex="-1"></a>last_year <span class="ot">&lt;-</span> <span class="fu">max</span>(gdp_col<span class="sc">$</span>year, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-4" tabindex="-1"></a>years_fc  <span class="ot">&lt;-</span> last_year <span class="sc">+</span> <span class="fu">seq_along</span>(best_fc<span class="sc">$</span>mean)</span>
+<span id="cb35-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-5" tabindex="-1"></a></span>
+<span id="cb35-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-6" tabindex="-1"></a><span class="co"># Notar: best_fc$lower/upper pueden ser NULL; manejamos con NA seguros.</span></span>
+<span id="cb35-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-7" tabindex="-1"></a>lo80 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>lower) <span class="sc">&amp;&amp;</span> <span class="st">&quot;80%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>lower)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>lower[,<span class="st">&quot;80%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb35-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-8" tabindex="-1"></a>hi80 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>upper) <span class="sc">&amp;&amp;</span> <span class="st">&quot;80%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>upper)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>upper[,<span class="st">&quot;80%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb35-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-9" tabindex="-1"></a>lo95 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>lower) <span class="sc">&amp;&amp;</span> <span class="st">&quot;95%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>lower)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>lower[,<span class="st">&quot;95%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb35-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-10" tabindex="-1"></a>hi95 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>upper) <span class="sc">&amp;&amp;</span> <span class="st">&quot;95%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>upper)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>upper[,<span class="st">&quot;95%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb35-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-11" tabindex="-1"></a></span>
+<span id="cb35-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-12" tabindex="-1"></a>df_final <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb35-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-13" tabindex="-1"></a>  <span class="at">Year =</span> years_fc,</span>
+<span id="cb35-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-14" tabindex="-1"></a>  <span class="at">Mean =</span> <span class="fu">exp</span>(<span class="fu">as.numeric</span>(best_fc<span class="sc">$</span>mean)),</span>
+<span id="cb35-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-15" tabindex="-1"></a>  <span class="at">Lo80 =</span> <span class="fu">as.numeric</span>(lo80),</span>
+<span id="cb35-16"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-16" tabindex="-1"></a>  <span class="at">Hi80 =</span> <span class="fu">as.numeric</span>(hi80),</span>
+<span id="cb35-17"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-17" tabindex="-1"></a>  <span class="at">Lo95 =</span> <span class="fu">as.numeric</span>(lo95),</span>
+<span id="cb35-18"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-18" tabindex="-1"></a>  <span class="at">Hi95 =</span> <span class="fu">as.numeric</span>(hi95)</span>
+<span id="cb35-19"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-19" tabindex="-1"></a>)</span>
+<span id="cb35-20"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-20" tabindex="-1"></a></span>
+<span id="cb35-21"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-21" tabindex="-1"></a>p_final <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb35-22"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-22" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> gdp_col<span class="sc">$</span>year, <span class="at">y =</span> gdp_col<span class="sc">$</span>gdp), <span class="at">linewidth =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb35-23"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-23" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> df_final, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">ymin =</span> Lo95, <span class="at">ymax =</span> Hi95), <span class="at">alpha =</span> .<span class="dv">12</span>) <span class="sc">+</span></span>
+<span id="cb35-24"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-24" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> df_final, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">ymin =</span> Lo80, <span class="at">ymax =</span> Hi80), <span class="at">alpha =</span> .<span class="dv">18</span>) <span class="sc">+</span></span>
+<span id="cb35-25"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-25" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> df_final, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Mean), <span class="at">linewidth =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb35-26"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-26" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">&quot;Pronóstico ETS — Modelo seleccionado:&quot;</span>, best_name),</span>
+<span id="cb35-27"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-27" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Año&quot;</span>, <span class="at">y =</span> <span class="st">&quot;US$ por persona (nivel)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb35-28"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-28" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb35-29"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb35-29" tabindex="-1"></a><span class="fu">print</span>(p_final)</span></code></pre></div>
+<p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-7-3.png" width="672" /></p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-1" tabindex="-1"></a><span class="co"># --- Serie base (Colombia) en log ---</span></span>
+<span id="cb36-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-2" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">&quot;dat_gdp&quot;</span>)) <span class="fu">stop</span>(<span class="st">&quot;dat_gdp no existe en el entorno.&quot;</span>)</span>
+<span id="cb36-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-3" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">exists</span>(<span class="st">&quot;gdp_col&quot;</span>)) {</span>
+<span id="cb36-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-4" tabindex="-1"></a>  gdp_col <span class="ot">&lt;-</span> dat_gdp <span class="sc">%&gt;%</span> <span class="fu">filter</span>(country <span class="sc">==</span> <span class="st">&quot;Colombia&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(year)</span>
+<span id="cb36-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-5" tabindex="-1"></a>}</span>
+<span id="cb36-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-6" tabindex="-1"></a>ts_log <span class="ot">&lt;-</span> <span class="fu">ts</span>(<span class="fu">log</span>(gdp_col<span class="sc">$</span>gdp),</span>
+<span id="cb36-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-7" tabindex="-1"></a>             <span class="at">start =</span> <span class="fu">min</span>(gdp_col<span class="sc">$</span>year, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb36-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-8" tabindex="-1"></a>             <span class="at">frequency =</span> <span class="dv">1</span>)  <span class="co"># anual</span></span>
+<span id="cb36-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-9" tabindex="-1"></a></span>
+<span id="cb36-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-10" tabindex="-1"></a><span class="co"># --- Partición entrenamiento/prueba ---</span></span>
+<span id="cb36-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-11" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="fu">length</span>(ts_log)</span>
+<span id="cb36-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-12" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="dv">10</span>, <span class="fu">max</span>(<span class="dv">3</span>, <span class="fu">floor</span>(n <span class="sc">*</span> <span class="fl">0.15</span>)))  <span class="co"># horizonte: hasta 10 años, al menos 3</span></span>
+<span id="cb36-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-13" tabindex="-1"></a>train <span class="ot">&lt;-</span> <span class="fu">window</span>(ts_log, <span class="at">end =</span> <span class="fu">time</span>(ts_log)[n <span class="sc">-</span> h])</span>
+<span id="cb36-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-14" tabindex="-1"></a>test  <span class="ot">&lt;-</span> <span class="fu">window</span>(ts_log, <span class="at">start =</span> <span class="fu">time</span>(ts_log)[n <span class="sc">-</span> h <span class="sc">+</span> <span class="dv">1</span>])</span>
+<span id="cb36-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-15" tabindex="-1"></a></span>
+<span id="cb36-16"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-16" tabindex="-1"></a><span class="co"># --- Baseline: modelo lineal con tendencia (en log) ---</span></span>
+<span id="cb36-17"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-17" tabindex="-1"></a>fit_lm <span class="ot">&lt;-</span> <span class="fu">tslm</span>(train <span class="sc">~</span> trend)</span>
+<span id="cb36-18"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-18" tabindex="-1"></a>fc_lm  <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_lm, <span class="at">h =</span> h)</span>
+<span id="cb36-19"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-19" tabindex="-1"></a></span>
+<span id="cb36-20"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-20" tabindex="-1"></a><span class="co"># --- ARIMA automático ---</span></span>
+<span id="cb36-21"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-21" tabindex="-1"></a>fit_arima <span class="ot">&lt;-</span> <span class="fu">auto.arima</span>(train, <span class="at">stepwise =</span> <span class="cn">FALSE</span>, <span class="at">approximation =</span> <span class="cn">FALSE</span>, <span class="at">seasonal =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb36-22"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-22" tabindex="-1"></a>fc_arima  <span class="ot">&lt;-</span> <span class="fu">forecast</span>(fit_arima, <span class="at">h =</span> h)</span>
+<span id="cb36-23"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-23" tabindex="-1"></a></span>
+<span id="cb36-24"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-24" tabindex="-1"></a><span class="co"># --- Comparación (RMSE/MAE/MAPE) + AIC/BIC de los modelos ---</span></span>
+<span id="cb36-25"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-25" tabindex="-1"></a>acc_lm    <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(fc_lm,    test)</span>
+<span id="cb36-26"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-26" tabindex="-1"></a>acc_arima <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(fc_arima, test)</span>
+<span id="cb36-27"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-27" tabindex="-1"></a></span>
+<span id="cb36-28"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-28" tabindex="-1"></a>acc_bj_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb36-29"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-29" tabindex="-1"></a>  <span class="at">Model =</span> <span class="fu">c</span>(<span class="st">&quot;TrendLM&quot;</span>, <span class="st">&quot;ARIMA&quot;</span>),</span>
+<span id="cb36-30"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-30" tabindex="-1"></a>  <span class="at">ME    =</span> <span class="fu">c</span>(acc_lm[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;ME&quot;</span>],    acc_arima[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;ME&quot;</span>]),</span>
+<span id="cb36-31"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-31" tabindex="-1"></a>  <span class="at">RMSE  =</span> <span class="fu">c</span>(acc_lm[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;RMSE&quot;</span>],  acc_arima[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;RMSE&quot;</span>]),</span>
+<span id="cb36-32"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-32" tabindex="-1"></a>  <span class="at">MAE   =</span> <span class="fu">c</span>(acc_lm[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;MAE&quot;</span>],   acc_arima[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;MAE&quot;</span>]),</span>
+<span id="cb36-33"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-33" tabindex="-1"></a>  <span class="at">MAPE  =</span> <span class="fu">c</span>(acc_lm[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;MAPE&quot;</span>],  acc_arima[<span class="st">&quot;Test set&quot;</span>,<span class="st">&quot;MAPE&quot;</span>]),</span>
+<span id="cb36-34"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-34" tabindex="-1"></a>  <span class="at">AIC   =</span> <span class="fu">c</span>(<span class="fu">AIC</span>(fit_lm),                <span class="fu">AIC</span>(fit_arima)),</span>
+<span id="cb36-35"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-35" tabindex="-1"></a>  <span class="at">BIC   =</span> <span class="fu">c</span>(<span class="fu">BIC</span>(fit_lm),                <span class="fu">BIC</span>(fit_arima)),</span>
+<span id="cb36-36"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-36" tabindex="-1"></a>  <span class="at">row.names =</span> <span class="cn">NULL</span></span>
+<span id="cb36-37"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-37" tabindex="-1"></a>)</span>
+<span id="cb36-38"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-38" tabindex="-1"></a></span>
+<span id="cb36-39"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-39" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">requireNamespace</span>(<span class="st">&quot;knitr&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="cb36-40"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-40" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>(acc_bj_df, <span class="at">digits =</span> <span class="dv">3</span>, <span class="at">caption =</span> <span class="st">&quot;Comparación Trend vs ARIMA&quot;</span>)</span>
+<span id="cb36-41"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-41" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb36-42"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-42" tabindex="-1"></a>  <span class="fu">print</span>(acc_bj_df)</span>
+<span id="cb36-43"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb36-43" tabindex="-1"></a>}</span></code></pre></div>
+<table>
+<caption><span id="tab:unnamed-chunk-8">Table 2.2: </span>Comparación Trend vs ARIMA</caption>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="right">ME</th>
+<th align="right">RMSE</th>
+<th align="right">MAE</th>
+<th align="right">MAPE</th>
+<th align="right">AIC</th>
+<th align="right">BIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">TrendLM</td>
+<td align="right">-0.371</td>
+<td align="right">0.437</td>
+<td align="right">0.398</td>
+<td align="right">4.558</td>
+<td align="right">-12.588</td>
+<td align="right">-6.621</td>
+</tr>
+<tr class="even">
+<td align="left">ARIMA</td>
+<td align="right">-0.560</td>
+<td align="right">0.607</td>
+<td align="right">0.560</td>
+<td align="right">6.409</td>
+<td align="right">-98.076</td>
+<td align="right">-92.165</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb37-1" tabindex="-1"></a><span class="co"># --- Selección del mejor por RMSE (y luego validar residuos) ---</span></span>
+<span id="cb37-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb37-2" tabindex="-1"></a>best_name <span class="ot">&lt;-</span> acc_bj_df<span class="sc">$</span>Model[ <span class="fu">which.min</span>(acc_bj_df<span class="sc">$</span>RMSE) ]</span>
+<span id="cb37-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb37-3" tabindex="-1"></a>best_fit  <span class="ot">&lt;-</span> <span class="cf">if</span> (best_name <span class="sc">==</span> <span class="st">&quot;ARIMA&quot;</span>) fit_arima <span class="cf">else</span> fit_lm</span>
+<span id="cb37-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb37-4" tabindex="-1"></a>best_fc   <span class="ot">&lt;-</span> <span class="cf">if</span> (best_name <span class="sc">==</span> <span class="st">&quot;ARIMA&quot;</span>) fc_arima  <span class="cf">else</span> fc_lm</span>
+<span id="cb37-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb37-5" tabindex="-1"></a></span>
+<span id="cb37-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb37-6" tabindex="-1"></a><span class="co"># --- Diagnóstico de residuos (robusto ante ausencia de residuales) ---</span></span>
+<span id="cb37-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb37-7" tabindex="-1"></a><span class="fu">try</span>({ <span class="fu">checkresiduals</span>(best_fit) }, <span class="at">silent =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre><code>## 
+##  Breusch-Godfrey test for serial correlation of order up to 10
+## 
+## data:  Residuals from Linear regression model
+## LM test = 47.063, df = 10, p-value = 9.196e-07</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-1" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">residuals</span>(best_fit), <span class="at">silent =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb39-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-2" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">inherits</span>(res, <span class="st">&quot;try-error&quot;</span>) <span class="sc">||</span> <span class="fu">is.null</span>(res)) {</span>
+<span id="cb39-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-3" tabindex="-1"></a>  fitted_vals <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">fitted</span>(best_fit), <span class="at">silent =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb39-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-4" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">inherits</span>(fitted_vals, <span class="st">&quot;try-error&quot;</span>) <span class="sc">&amp;&amp;</span> <span class="sc">!</span><span class="fu">is.null</span>(fitted_vals)) {</span>
+<span id="cb39-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-5" tabindex="-1"></a>    len <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="fu">length</span>(train), <span class="fu">length</span>(fitted_vals))</span>
+<span id="cb39-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-6" tabindex="-1"></a>    res <span class="ot">&lt;-</span> train[<span class="fu">seq_len</span>(len)] <span class="sc">-</span> fitted_vals[<span class="fu">seq_len</span>(len)]</span>
+<span id="cb39-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-7" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb39-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-8" tabindex="-1"></a>    res <span class="ot">&lt;-</span> train <span class="sc">-</span> <span class="fu">mean</span>(train, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb39-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-9" tabindex="-1"></a>  }</span>
+<span id="cb39-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-10" tabindex="-1"></a>}</span>
+<span id="cb39-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-11" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">na.omit</span>(res))</span>
+<span id="cb39-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-12" tabindex="-1"></a></span>
+<span id="cb39-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-13" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">2</span>,<span class="dv">1</span>))</span>
+<span id="cb39-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-14" tabindex="-1"></a><span class="fu">acf</span>(res,  <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">&quot;ACF residuos —&quot;</span>, best_name))</span>
+<span id="cb39-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb39-15" tabindex="-1"></a><span class="fu">pacf</span>(res, <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">&quot;PACF residuos —&quot;</span>, best_name))</span></code></pre></div>
+<p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-8-2.png" width="672" /></p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb40-1" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb40-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb40-2" tabindex="-1"></a>lb <span class="ot">&lt;-</span> <span class="fu">Box.test</span>(res, <span class="at">lag =</span> <span class="fu">min</span>(<span class="dv">10</span>, <span class="fu">length</span>(res) <span class="sc">-</span> <span class="dv">1</span>), <span class="at">type =</span> <span class="st">&quot;Ljung-Box&quot;</span>)</span>
+<span id="cb40-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb40-3" tabindex="-1"></a>lb</span></code></pre></div>
+<pre><code>## 
+##  Box-Ljung test
+## 
+## data:  res
+## X-squared = 160.49, df = 10, p-value &lt; 2.2e-16</code></pre>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-1" tabindex="-1"></a><span class="co"># --- Gráfico comparativo (en nivel) de ambos pronósticos ---</span></span>
+<span id="cb42-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-2" tabindex="-1"></a>p_comp <span class="ot">&lt;-</span> <span class="fu">autoplot</span>(<span class="fu">exp</span>(ts_log)) <span class="sc">+</span></span>
+<span id="cb42-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-3" tabindex="-1"></a>  <span class="fu">autolayer</span>(<span class="fu">exp</span>(fc_lm<span class="sc">$</span>mean),    <span class="at">series =</span> <span class="st">&quot;Tendencia lineal (log)&quot;</span>, <span class="at">lwd =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb42-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-4" tabindex="-1"></a>  <span class="fu">autolayer</span>(<span class="fu">exp</span>(fc_arima<span class="sc">$</span>mean), <span class="at">series =</span> <span class="st">&quot;ARIMA (log)&quot;</span>,             <span class="at">lwd =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb42-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-5" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;PIB per cápita (Colombia): comparación Trend vs ARIMA&quot;</span>,</span>
+<span id="cb42-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-6" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Año&quot;</span>, <span class="at">y =</span> <span class="st">&quot;US$ por persona (nivel)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb42-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-7" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb42-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb42-8" tabindex="-1"></a><span class="fu">print</span>(p_comp)</span></code></pre></div>
+<p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-8-3.png" width="672" /></p>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-1" tabindex="-1"></a><span class="co"># --- Pronóstico final del modelo seleccionado (en nivel con intervalos) ---</span></span>
+<span id="cb43-2"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-2" tabindex="-1"></a>last_year <span class="ot">&lt;-</span> <span class="fu">max</span>(gdp_col<span class="sc">$</span>year, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb43-3"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-3" tabindex="-1"></a>years_fc  <span class="ot">&lt;-</span> last_year <span class="sc">+</span> <span class="fu">seq_along</span>(best_fc<span class="sc">$</span>mean)</span>
+<span id="cb43-4"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-4" tabindex="-1"></a></span>
+<span id="cb43-5"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-5" tabindex="-1"></a>lo80 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>lower) <span class="sc">&amp;&amp;</span> <span class="st">&quot;80%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>lower)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>lower[,<span class="st">&quot;80%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb43-6"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-6" tabindex="-1"></a>hi80 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>upper) <span class="sc">&amp;&amp;</span> <span class="st">&quot;80%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>upper)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>upper[,<span class="st">&quot;80%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb43-7"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-7" tabindex="-1"></a>lo95 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>lower) <span class="sc">&amp;&amp;</span> <span class="st">&quot;95%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>lower)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>lower[,<span class="st">&quot;95%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb43-8"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-8" tabindex="-1"></a>hi95 <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(best_fc<span class="sc">$</span>upper) <span class="sc">&amp;&amp;</span> <span class="st">&quot;95%&quot;</span> <span class="sc">%in%</span> <span class="fu">colnames</span>(best_fc<span class="sc">$</span>upper)) <span class="fu">exp</span>(best_fc<span class="sc">$</span>upper[,<span class="st">&quot;95%&quot;</span>]) <span class="cf">else</span> <span class="fu">rep</span>(<span class="cn">NA_real_</span>, <span class="fu">length</span>(best_fc<span class="sc">$</span>mean))</span>
+<span id="cb43-9"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-9" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-10" tabindex="-1"></a>df_final <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb43-11"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-11" tabindex="-1"></a>  <span class="at">Year =</span> years_fc,</span>
+<span id="cb43-12"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-12" tabindex="-1"></a>  <span class="at">Mean =</span> <span class="fu">exp</span>(<span class="fu">as.numeric</span>(best_fc<span class="sc">$</span>mean)),</span>
+<span id="cb43-13"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-13" tabindex="-1"></a>  <span class="at">Lo80 =</span> <span class="fu">as.numeric</span>(lo80),</span>
+<span id="cb43-14"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-14" tabindex="-1"></a>  <span class="at">Hi80 =</span> <span class="fu">as.numeric</span>(hi80),</span>
+<span id="cb43-15"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-15" tabindex="-1"></a>  <span class="at">Lo95 =</span> <span class="fu">as.numeric</span>(lo95),</span>
+<span id="cb43-16"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-16" tabindex="-1"></a>  <span class="at">Hi95 =</span> <span class="fu">as.numeric</span>(hi95)</span>
+<span id="cb43-17"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-17" tabindex="-1"></a>)</span>
+<span id="cb43-18"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-18" tabindex="-1"></a></span>
+<span id="cb43-19"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-19" tabindex="-1"></a><span class="co"># Etiqueta ARIMA (p,d,q)(P,D,Q)[m]</span></span>
+<span id="cb43-20"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-20" tabindex="-1"></a>ord <span class="ot">&lt;-</span> <span class="fu">arimaorder</span>(fit_arima)       <span class="co"># c(p,d,q,P,D,Q,m)</span></span>
+<span id="cb43-21"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-21" tabindex="-1"></a>lab_arima <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(ord[<span class="dv">4</span>]) <span class="sc">&amp;&amp;</span> ord[<span class="dv">7</span>] <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
+<span id="cb43-22"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-22" tabindex="-1"></a>  <span class="fu">sprintf</span>(<span class="st">&quot;ARIMA(%d,%d,%d)(%d,%d,%d)[%d]&quot;</span>, ord[<span class="dv">1</span>], ord[<span class="dv">2</span>], ord[<span class="dv">3</span>], ord[<span class="dv">4</span>], ord[<span class="dv">5</span>], ord[<span class="dv">6</span>], ord[<span class="dv">7</span>])</span>
+<span id="cb43-23"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-23" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb43-24"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-24" tabindex="-1"></a>  <span class="fu">sprintf</span>(<span class="st">&quot;ARIMA(%d,%d,%d)&quot;</span>, ord[<span class="dv">1</span>], ord[<span class="dv">2</span>], ord[<span class="dv">3</span>])</span>
+<span id="cb43-25"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-25" tabindex="-1"></a>}</span>
+<span id="cb43-26"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-26" tabindex="-1"></a></span>
+<span id="cb43-27"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-27" tabindex="-1"></a>p_final <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb43-28"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-28" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> gdp_col<span class="sc">$</span>year, <span class="at">y =</span> gdp_col<span class="sc">$</span>gdp), <span class="at">linewidth =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb43-29"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-29" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> df_final, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">ymin =</span> Lo95, <span class="at">ymax =</span> Hi95), <span class="at">alpha =</span> .<span class="dv">12</span>) <span class="sc">+</span></span>
+<span id="cb43-30"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-30" tabindex="-1"></a>  <span class="fu">geom_ribbon</span>(<span class="at">data =</span> df_final, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">ymin =</span> Lo80, <span class="at">ymax =</span> Hi80), <span class="at">alpha =</span> .<span class="dv">18</span>) <span class="sc">+</span></span>
+<span id="cb43-31"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-31" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> df_final, <span class="fu">aes</span>(<span class="at">x =</span> Year, <span class="at">y =</span> Mean), <span class="at">linewidth =</span> <span class="fl">0.9</span>) <span class="sc">+</span></span>
+<span id="cb43-32"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-32" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">&quot;Pronóstico final — modelo seleccionado:&quot;</span>, <span class="cf">if</span> (best_name<span class="sc">==</span><span class="st">&quot;ARIMA&quot;</span>) lab_arima <span class="cf">else</span> <span class="st">&quot;Tendencia lineal&quot;</span>),</span>
+<span id="cb43-33"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-33" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Año&quot;</span>, <span class="at">y =</span> <span class="st">&quot;US$ por persona (nivel)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb43-34"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-34" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb43-35"><a href="unidad-2-análisis-temporal-pib-per-cápita.html#cb43-35" tabindex="-1"></a><span class="fu">print</span>(p_final)</span></code></pre></div>
+<pre><code>## Warning: Removed 9 rows containing missing values or values outside the scale range
+## (`geom_ribbon()`).
+## Removed 9 rows containing missing values or values outside the scale range
+## (`geom_ribbon()`).</code></pre>
+<p><img src="seriesdetiempo_files/figure-html/unnamed-chunk-8-4.png" width="672" /></p>
 
 </div>
 </div>

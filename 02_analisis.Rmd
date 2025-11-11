@@ -24,6 +24,7 @@ library(wbstats)    # otra interfaz al API del Banco Mundial
 library(dplyr)
 library(ggplot2)
 library(zoo)
+library(forecast)
 ```
 
 ## Descarga y preparación de PIB per cápita (serie estable)
@@ -255,3 +256,237 @@ Las pruebas ADF y KPSS confirman que la serie no es estacionaria en niveles, per
 Por tanto, las transformaciones log() y Δlog() son necesarias y justificadas para preparar la serie hacia modelado ARIMA/ETS.
 
 El análisis indica que la estructura temporal del PIB per cápita colombiano está dominada por una tendencia de largo plazo asociada a crecimiento económico, sin evidencia de ciclos regulares o estacionalidad recurrente.
+
+```{r, echo=TRUE, include=TRUE}
+# --- Serie base (Colombia) en log para estabilizar variabilidad ---
+if (!exists("dat_gdp")) stop("dat_gdp no existe en el entorno.")
+if (!exists("gdp_col")) {
+  gdp_col <- dat_gdp %>% filter(country == "Colombia") %>% arrange(year)
+}
+ts_log <- ts(log(gdp_col$gdp),
+             start = min(gdp_col$year, na.rm = TRUE),
+             frequency = 1)  # anual (sin estacionalidad intra-anual)
+
+# --- Partición entrenamiento/prueba ---
+n <- length(ts_log)
+h <- min(10, max(3, floor(n * 0.15)))  # horizonte: hasta 10 años, al menos 3
+train <- window(ts_log, end = time(ts_log)[n - h])
+test  <- window(ts_log, start = time(ts_log)[n - h + 1])
+
+# --- Modelos ETS sin estacionalidad ---
+fit_ses  <- ets(train, model = "ANN")                   # SES
+fit_holt <- ets(train, model = "AAN")                   # Holt (tendencia)
+fit_dmp  <- ets(train, model = "AAN", damped = TRUE)    # Holt amortiguado (damped)
+
+# --- Pronósticos ---
+fc_ses   <- forecast(fit_ses,  h = h)
+fc_holt  <- forecast(fit_holt, h = h)
+fc_dmp   <- forecast(fit_dmp,  h = h)
+
+# --- Métricas de evaluación (en log) ---
+acc <- rbind(
+  SES    = accuracy(fc_ses,  test),
+  Holt   = accuracy(fc_holt, test),
+  Damped = accuracy(fc_dmp,  test)
+)[, c("ME","RMSE","MAE","MAPE","ACF1")]
+acc_df <- data.frame(Model = rownames(acc), acc, row.names = NULL)
+
+if (requireNamespace("knitr", quietly = TRUE)) {
+  knitr::kable(acc_df, digits = 3, caption = "Comparación de modelos ETS (evaluación en log)")
+} else {
+  print(acc_df)
+}
+
+# --- Selección del mejor por RMSE ---
+best_name <- acc_df$Model[ which.min(acc_df$RMSE) ]
+best_fit  <- switch(best_name,
+                    SES    = fit_ses,
+                    Holt   = fit_holt,
+                    Damped = fit_dmp)
+best_fc   <- switch(best_name,
+                    SES    = fc_ses,
+                    Holt   = fc_holt,
+                    Damped = fc_dmp)
+
+best_name  # nombre del modelo seleccionado
+
+# --- Gráfico comparativo de pronósticos en nivel (re-exponenciados) ---
+p_comp <- autoplot(exp(ts_log)) +
+  autolayer(exp(fc_ses$mean),  series = "SES",               lwd = 0.9) +
+  autolayer(exp(fc_holt$mean), series = "Holt",              lwd = 0.9) +
+  autolayer(exp(fc_dmp$mean),  series = "Holt amortiguado",  lwd = 0.9) +
+  labs(title = "PIB per cápita (Colombia): Suavizamiento exponencial (ETS)",
+       x = "Año", y = "US$ por persona (nivel)") +
+  theme_minimal()
+print(p_comp)
+
+# --- Diagnóstico de residuos (robusto) ---
+res <- try(residuals(best_fit), silent = TRUE)
+if (inherits(res, "try-error") || is.null(res)) {
+  fitted_vals <- try(fitted(best_fit), silent = TRUE)
+  if (!inherits(fitted_vals, "try-error") && !is.null(fitted_vals)) {
+    len <- min(length(train), length(fitted_vals))
+    res <- train[seq_len(len)] - fitted_vals[seq_len(len)]
+  } else {
+    res <- train - mean(train, na.rm = TRUE)  # fallback
+  }
+}
+res <- as.numeric(na.omit(res))
+
+par(mfrow = c(1,2), mar = c(3,4,2,1))
+acf(res,  main = paste("ACF residuos —", best_name))
+pacf(res, main = paste("PACF residuos —", best_name))
+par(mfrow = c(1,1))
+
+lb <- Box.test(res, lag = min(10, length(res) - 1), type = "Ljung-Box")
+lb
+
+# --- Pronóstico final del modelo seleccionado (en nivel con intervalos) ---
+# Construimos los años futuros de forma segura (anual):
+last_year <- max(gdp_col$year, na.rm = TRUE)
+years_fc  <- last_year + seq_along(best_fc$mean)
+
+# Notar: best_fc$lower/upper pueden ser NULL; manejamos con NA seguros.
+lo80 <- if (!is.null(best_fc$lower) && "80%" %in% colnames(best_fc$lower)) exp(best_fc$lower[,"80%"]) else rep(NA_real_, length(best_fc$mean))
+hi80 <- if (!is.null(best_fc$upper) && "80%" %in% colnames(best_fc$upper)) exp(best_fc$upper[,"80%"]) else rep(NA_real_, length(best_fc$mean))
+lo95 <- if (!is.null(best_fc$lower) && "95%" %in% colnames(best_fc$lower)) exp(best_fc$lower[,"95%"]) else rep(NA_real_, length(best_fc$mean))
+hi95 <- if (!is.null(best_fc$upper) && "95%" %in% colnames(best_fc$upper)) exp(best_fc$upper[,"95%"]) else rep(NA_real_, length(best_fc$mean))
+
+df_final <- data.frame(
+  Year = years_fc,
+  Mean = exp(as.numeric(best_fc$mean)),
+  Lo80 = as.numeric(lo80),
+  Hi80 = as.numeric(hi80),
+  Lo95 = as.numeric(lo95),
+  Hi95 = as.numeric(hi95)
+)
+
+p_final <- ggplot() +
+  geom_line(aes(x = gdp_col$year, y = gdp_col$gdp), linewidth = 0.6) +
+  geom_ribbon(data = df_final, aes(x = Year, ymin = Lo95, ymax = Hi95), alpha = .12) +
+  geom_ribbon(data = df_final, aes(x = Year, ymin = Lo80, ymax = Hi80), alpha = .18) +
+  geom_line(data = df_final, aes(x = Year, y = Mean), linewidth = 0.9) +
+  labs(title = paste("Pronóstico ETS — Modelo seleccionado:", best_name),
+       x = "Año", y = "US$ por persona (nivel)") +
+  theme_minimal()
+print(p_final)
+```
+```{r, echo=TRUE, include=TRUE}
+# --- Serie base (Colombia) en log ---
+if (!exists("dat_gdp")) stop("dat_gdp no existe en el entorno.")
+if (!exists("gdp_col")) {
+  gdp_col <- dat_gdp %>% filter(country == "Colombia") %>% arrange(year)
+}
+ts_log <- ts(log(gdp_col$gdp),
+             start = min(gdp_col$year, na.rm = TRUE),
+             frequency = 1)  # anual
+
+# --- Partición entrenamiento/prueba ---
+n <- length(ts_log)
+h <- min(10, max(3, floor(n * 0.15)))  # horizonte: hasta 10 años, al menos 3
+train <- window(ts_log, end = time(ts_log)[n - h])
+test  <- window(ts_log, start = time(ts_log)[n - h + 1])
+
+# --- Baseline: modelo lineal con tendencia (en log) ---
+fit_lm <- tslm(train ~ trend)
+fc_lm  <- forecast(fit_lm, h = h)
+
+# --- ARIMA automático ---
+fit_arima <- auto.arima(train, stepwise = FALSE, approximation = FALSE, seasonal = TRUE)
+fc_arima  <- forecast(fit_arima, h = h)
+
+# --- Comparación (RMSE/MAE/MAPE) + AIC/BIC de los modelos ---
+acc_lm    <- accuracy(fc_lm,    test)
+acc_arima <- accuracy(fc_arima, test)
+
+acc_bj_df <- data.frame(
+  Model = c("TrendLM", "ARIMA"),
+  ME    = c(acc_lm["Test set","ME"],    acc_arima["Test set","ME"]),
+  RMSE  = c(acc_lm["Test set","RMSE"],  acc_arima["Test set","RMSE"]),
+  MAE   = c(acc_lm["Test set","MAE"],   acc_arima["Test set","MAE"]),
+  MAPE  = c(acc_lm["Test set","MAPE"],  acc_arima["Test set","MAPE"]),
+  AIC   = c(AIC(fit_lm),                AIC(fit_arima)),
+  BIC   = c(BIC(fit_lm),                BIC(fit_arima)),
+  row.names = NULL
+)
+
+if (requireNamespace("knitr", quietly = TRUE)) {
+  knitr::kable(acc_bj_df, digits = 3, caption = "Comparación Trend vs ARIMA")
+} else {
+  print(acc_bj_df)
+}
+
+# --- Selección del mejor por RMSE (y luego validar residuos) ---
+best_name <- acc_bj_df$Model[ which.min(acc_bj_df$RMSE) ]
+best_fit  <- if (best_name == "ARIMA") fit_arima else fit_lm
+best_fc   <- if (best_name == "ARIMA") fc_arima  else fc_lm
+
+# --- Diagnóstico de residuos (robusto ante ausencia de residuales) ---
+try({ checkresiduals(best_fit) }, silent = TRUE)
+
+res <- try(residuals(best_fit), silent = TRUE)
+if (inherits(res, "try-error") || is.null(res)) {
+  fitted_vals <- try(fitted(best_fit), silent = TRUE)
+  if (!inherits(fitted_vals, "try-error") && !is.null(fitted_vals)) {
+    len <- min(length(train), length(fitted_vals))
+    res <- train[seq_len(len)] - fitted_vals[seq_len(len)]
+  } else {
+    res <- train - mean(train, na.rm = TRUE)
+  }
+}
+res <- as.numeric(na.omit(res))
+
+par(mfrow = c(1,2), mar = c(3,4,2,1))
+acf(res,  main = paste("ACF residuos —", best_name))
+pacf(res, main = paste("PACF residuos —", best_name))
+par(mfrow = c(1,1))
+lb <- Box.test(res, lag = min(10, length(res) - 1), type = "Ljung-Box")
+lb
+
+# --- Gráfico comparativo (en nivel) de ambos pronósticos ---
+p_comp <- autoplot(exp(ts_log)) +
+  autolayer(exp(fc_lm$mean),    series = "Tendencia lineal (log)", lwd = 0.9) +
+  autolayer(exp(fc_arima$mean), series = "ARIMA (log)",             lwd = 0.9) +
+  labs(title = "PIB per cápita (Colombia): comparación Trend vs ARIMA",
+       x = "Año", y = "US$ por persona (nivel)") +
+  theme_minimal()
+print(p_comp)
+
+# --- Pronóstico final del modelo seleccionado (en nivel con intervalos) ---
+last_year <- max(gdp_col$year, na.rm = TRUE)
+years_fc  <- last_year + seq_along(best_fc$mean)
+
+lo80 <- if (!is.null(best_fc$lower) && "80%" %in% colnames(best_fc$lower)) exp(best_fc$lower[,"80%"]) else rep(NA_real_, length(best_fc$mean))
+hi80 <- if (!is.null(best_fc$upper) && "80%" %in% colnames(best_fc$upper)) exp(best_fc$upper[,"80%"]) else rep(NA_real_, length(best_fc$mean))
+lo95 <- if (!is.null(best_fc$lower) && "95%" %in% colnames(best_fc$lower)) exp(best_fc$lower[,"95%"]) else rep(NA_real_, length(best_fc$mean))
+hi95 <- if (!is.null(best_fc$upper) && "95%" %in% colnames(best_fc$upper)) exp(best_fc$upper[,"95%"]) else rep(NA_real_, length(best_fc$mean))
+
+df_final <- data.frame(
+  Year = years_fc,
+  Mean = exp(as.numeric(best_fc$mean)),
+  Lo80 = as.numeric(lo80),
+  Hi80 = as.numeric(hi80),
+  Lo95 = as.numeric(lo95),
+  Hi95 = as.numeric(hi95)
+)
+
+# Etiqueta ARIMA (p,d,q)(P,D,Q)[m]
+ord <- arimaorder(fit_arima)       # c(p,d,q,P,D,Q,m)
+lab_arima <- if (!is.na(ord[4]) && ord[7] > 1) {
+  sprintf("ARIMA(%d,%d,%d)(%d,%d,%d)[%d]", ord[1], ord[2], ord[3], ord[4], ord[5], ord[6], ord[7])
+} else {
+  sprintf("ARIMA(%d,%d,%d)", ord[1], ord[2], ord[3])
+}
+
+p_final <- ggplot() +
+  geom_line(aes(x = gdp_col$year, y = gdp_col$gdp), linewidth = 0.6) +
+  geom_ribbon(data = df_final, aes(x = Year, ymin = Lo95, ymax = Hi95), alpha = .12) +
+  geom_ribbon(data = df_final, aes(x = Year, ymin = Lo80, ymax = Hi80), alpha = .18) +
+  geom_line(data = df_final, aes(x = Year, y = Mean), linewidth = 0.9) +
+  labs(title = paste("Pronóstico final — modelo seleccionado:", if (best_name=="ARIMA") lab_arima else "Tendencia lineal"),
+       x = "Año", y = "US$ por persona (nivel)") +
+  theme_minimal()
+print(p_final)
+```
+
+

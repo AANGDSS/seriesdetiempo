@@ -10,3 +10,6 @@ serie-principal-colombia-y-gráfico-base
 promedio-móvil-suavizamiento
 rezagos-y-acf-dependencia-temporal
 estacionalidad-discusión
+tiempo-como-variable-complementaria-pib-vs-co₂
+tab:unnamed-chunk-7
+tab:unnamed-chunk-8
